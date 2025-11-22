@@ -1,0 +1,25 @@
+Jimmy Wijaya Tandra 00000092897
+
+1. Code that handles storing the picture based on the URI:
+    takePictureLauncher =
+        registerForActivityResult(ActivityResultContracts.TakePicture()) {
+            photoInfo?.let { info ->
+                providerFileManager.insertImageToStore(info)
+            }
+        }
+
+    This is the activity result callback that handles the result after the user takes a picture. The `providerFileManager.insertImageToStore(info)` method is what actually stores the picture to the MediaStore using the URI contained in the `FileInfo` object.
+
+2. FileInfo attributes explanation
+    First attribute (URI):The URI refers to a content URI created by the FileProvider. This is a temporary URI that points to the file location where the camera app will save the captured image. It's used to grant the camera app permission to write to your app's private storage.
+
+    Fourth attribute (relativePath): The relativePath refers to the folder path within the public MediaStore where the file will be stored (e.g., `Pictures` or `Movies`). This is used when inserting the file into MediaStore to organize files in the appropriate public directory accessible by other apps.
+
+3. Chronological order of picture capture and storage
+    1) User clicks photo button → `openImageCapture()` is called
+    2) Generate URI→ `providerFileManager.generatePhotoUri()` creates a `FileInfo` object containing a FileProvider URI and file metadata
+    3) Launch camera → `takePictureLauncher.launch(uri)` opens the camera app with the FileProvider URI
+    4) User takes picture → Camera app saves the image to the file location specified by the URI
+    5) Camera returns → `ActivityResultContracts.TakePicture()` callback is triggered with a success/failure result
+    6) Insert to MediaStore → If successful, `providerFileManager.insertImageToStore(info)` copies/moves the file from the app's private storage to the public MediaStore
+    7) File accessible → The image is now stored in MediaStore and accessible to other apps through the gallery
